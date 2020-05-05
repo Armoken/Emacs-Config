@@ -700,10 +700,10 @@ Editor settings
         :diminish smart-shift-mode
         :bind
         (:map smart-shift-mode-map
-              ("<C-up>" . smart-shift-up)
-              ("<C-down>" . smart-shift-down)
-              ("<C-left>" . smart-shift-left)
-              ("<C-right>" . smart-shift-right)))
+              ("<C-s-up>" . smart-shift-up)
+              ("<C-s-down>" . smart-shift-down)
+              ("<C-s-left>" . smart-shift-left)
+              ("<C-s-right>" . smart-shift-right)))
     #+END_SRC
 
 *** [[https://github.com/lewang/ws-butler][Fixing up whitespaces only for touched lines]]
@@ -1215,7 +1215,7 @@ Editor settings
            :hook (dap-mode . ayrc/dap-hook)
            :init
            (defun ayrc/dap-hook ()
-               (setq dap-lldb-debug-program '("/usr/bin/lldb-vscode"))
+               (setq dap-lldb-debug-program '("/opt/local/libexec/llvm-9.0/bin/lldb-vscode"))
                (add-hook 'dap-stopped-hook
                          (lambda (arg) (call-interactively #'dap-hydra)))
 
@@ -1800,7 +1800,7 @@ Editor settings
                (ayrc/local-set-keys '(("C-c C-r" . clang-format-region)))
 
                (setq irony-server-install-prefix
-                     (concat user-emacs-directory
+                     (concat user-phemacs-directory
                              "/contrib/servers/irony"))
 
                (irony-mode 1)))
@@ -1944,7 +1944,7 @@ Editor settings
             (eldoc-mode 1))
       #+END_SRC
 
-**** [[https://github.com/MaskRay/emacs-ccls][ccls]]
+**** [[https://github.com/MaskRay/emacs-ccls][ ccls]]
      Emacs client for ccls, a C/C++ language server
 
      #+NAME: ccls-system-prerequisites
@@ -1969,12 +1969,30 @@ Editor settings
                (setq ccls-executable (executable-find "ccls"))
 
                ;; Log file
-               ;; (setq ccls-args '("--log-file=/tmp/ccls-9999.log"))
+               (setq ccls-args '("--log-file=/tmp/ccls-9999.log"))
 
-               (setq ccls-extra-init-params
+               (setq ccls-initialization-options
                      '(
                        :index       (:comments 2)
-                       :completion  (:detailedLabel t)))
+                       :completion  (:detailedLabel t)
+                       :compilationDatabaseDirectory "/Users/vitali.liashchuk/coding/pet-rescue-mobile/projects/build"
+                       :cache (:directory "/tmp/.ccls-cache")
+                       :clang (:extraArgs [
+                                           "-isystem/Library/Developer/CommandLineTools/usr/include/c++/v1"
+                                           "-isystem/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include"
+                                           "-isystem/usr/local/include"
+                                           "-isysteml/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/11.0.3/include"
+                                           "-isystem/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"
+                                           "-isystem/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include"
+                                           "-isystem/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks"
+                                           ]
+                                          :resourceDir "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/11.0.3/")
+                                    ))
+
+;;               (setq ccls-extra-init-params
+;;                     '(
+;;                       :index       (:comments 2)
+;;                       :completion  (:detailedLabel t)))
 
                ;; Add a lot of highlight mistakes
                ;; (setq ccls-sem-highlight-method 'overlay)
@@ -2007,6 +2025,17 @@ Editor settings
       #+BEGIN_SRC emacs-lisp :tangle no :noweb yes
         (require 'dap-lldb)
         (ayrc/dap-remove-nth-first-templates 1)
+
+        (dap-register-debug-template
+         "PET: LLDB::Run"
+         (list :type "lldb"
+               :cwd "/Users/vitali.liashchuk/coding/pet-rescue-mobile"
+               :request "launch"
+               :program "/Users/vitali.liashchuk/coding/pet-rescue-mobile/projects/build/petrescuesaga/petrescuesaga"
+;;               :args (list
+;;                      "--first_flag"
+;;                      "--second_flag" "third_argumnt")
+               :name "PET: LLDB::Run"))
 
         (dap-register-debug-template
          "AYRC Initial Configuration of LLDB::Run"
